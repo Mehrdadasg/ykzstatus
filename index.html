@@ -59,7 +59,7 @@
     }
 
     // IP و ISP
-    fetch("https://ipinfo.io/json?token=YOUR_TOKEN")
+    fetch("https://ipinfo.io/json?token=5e3eed6a49b141")
       .then(r => r.json())
       .then(d => setResult("ip", true, `IP: ${d.ip} | ISP: ${d.org}`, "ip"))
       .catch(() => setResult("ip", false, "IP دریافت نشد", "ip"));
