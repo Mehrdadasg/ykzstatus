@@ -93,9 +93,16 @@
       .catch(() => setResult("dns-cf", false, "DNS Cloudflare در دسترس نیست", "dns"));
 
     // تست API
-   fetch("https://api.yekzan.com/ping")
+   // تست API
+fetch("https://api.yekzan.com/ping")
   .then(async r => {
-    let text = await r.text();
+    let text = "";
+    try {
+      text = await r.text();
+    } catch (err) {
+      text = "(محتوای خطا قابل خواندن نیست - CORS)";
+    }
+
     if (r.ok) {
       setResult("api", true, `API پاسخ داد (Status ${r.status}): ${text}`, "api");
     } else {
@@ -105,6 +112,7 @@
   .catch(err => {
     setResult("api", false, `ارتباط با API برقرار نشد: ${err}`, "api");
   });
+
   </script>
 </body>
 </html>
