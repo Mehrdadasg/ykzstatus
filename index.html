@@ -14,6 +14,10 @@
       <div id="ip" class="p-3 bg-gray-50 rounded">در حال دریافت IP...</div>
       <div id="dns-google" class="p-3 bg-gray-50 rounded">تست DNS گوگل...</div>
       <div id="dns-cf" class="p-3 bg-gray-50 rounded">تست DNS Cloudflare...</div>
+      <div id="dns-real" class="p-3 bg-gray-50 rounded">تست DNS Real...</div>
+
+
+      
       <div id="api" class="p-3 bg-gray-50 rounded">تست اتصال به API...</div>
     </div>
 
@@ -95,7 +99,16 @@
 
     // تست API
    // تست API
-fetch("https://api.yekzan.com/ping")
+// 1️⃣ تست DNS واقعی کاربر با ping.txt
+let img = new Image();
+img.onload = () => setResult("dns-real", true, "DNS روی دستگاه کاربر دامنه را resolve کرد", "dns");
+img.onerror = () => setResult("dns-real", false, "DNS روی دستگاه کاربر نتونست دامنه رو resolve کنه", "dns");
+img.src = "https://api.yekzan.com/ping.png?cache=" + Date.now(); // cache-buster
+
+
+
+// 2️⃣ تست API با نمایش status code واقعی
+fetch("https://api.yekzan.com/api/service/checkstatus")
   .then(async r => {
     let text = "";
     try {
@@ -113,6 +126,7 @@ fetch("https://api.yekzan.com/ping")
   .catch(err => {
     setResult("api", false, `ارتباط با API برقرار نشد: ${err}`, "api");
   });
+
 
   </script>
 </body>
