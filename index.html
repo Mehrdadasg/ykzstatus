@@ -11,6 +11,8 @@
     <h1 class="text-2xl font-bold text-center mb-4">📡 وضعیت اتصال شما</h1>
     
     <div id="results" class="space-y-3 text-sm">
+        <div id="device-info" dir="rtl" class="box">در حال شناسایی دستگاه...</div>
+
       <div id="ip" class="p-3 bg-gray-50 rounded">در حال دریافت IP...</div>
       <div id="dns-google" class="p-3 bg-gray-50 rounded">تست DNS گوگل...</div>
       <div id="dns-cf" class="p-3 bg-gray-50 rounded">تست DNS Cloudflare...</div>
@@ -27,6 +29,26 @@
   </div>
 
   <script>
+
+    // --- 1. نمایش مدل گوشی و نسخه اندروید ---
+function getDeviceInfo() {
+  const ua = navigator.userAgent;
+  let device = "نامشخص";
+  let os = "نامشخص";
+
+  if (/Android/.test(ua)) {
+    os = ua.match(/Android\s+[\d\.]+/)[0];
+  }
+
+  let modelMatch = ua.match(/;\s*(.*?)\s+Build\//);
+  if (modelMatch) device = modelMatch[1];
+
+  const el = document.getElementById("device-info");
+  el.innerText = `دستگاه: ${device}, سیستم‌عامل: ${os}`;
+}
+
+getDeviceInfo();
+
     let results = { ip: false, dns: false, api: false };
 
     function setResult(id, ok, msg, key = null) {
