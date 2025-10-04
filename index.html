@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>Status - Yekzan</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-lg">
+    <h1 class="text-2xl font-bold text-center mb-4">📡 وضعیت اتصال شما</h1>
+    
+    <div id="results" class="space-y-3 text-sm">
+      <div id="ip" class="p-3 bg-gray-50 rounded">در حال دریافت IP...</div>
+      <div id="dns-google" class="p-3 bg-gray-50 rounded">تست DNS گوگل...</div>
+      <div id="dns-cf" class="p-3 bg-gray-50 rounded">تست DNS Cloudflare...</div>
+      <div id="api" class="p-3 bg-gray-50 rounded">تست اتصال به API...</div>
+    </div>
+
+    <div id="summary" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded text-blue-800 text-center font-semibold">
+      ⏳ در حال تحلیل نتایج...
+    </div>
+  </div>
+
+  <script>
+    let results = { ip: false, dns: false, api: false };
+
+    function setResult(id, ok, msg, key = null) {
+      const el = document.getElementById(id);
+      el.innerHTML = (ok ? "✅ " : "❌ ") + msg;
+      el.className = `p-3 rounded ${ok ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`;
+      if (key) results[key] = ok;
+      checkSummary();
+    }
+
+    function checkSummary() {
+      const el = document.getElementById("summary");
+
+      if (Object.values(results).filter(x => x !== false).length < 2) {
+        // هنوز همه تست‌ها کامل نشده
+        return;
+      }
+
+      if (!results.ip) {
+        el.innerHTML = "❌ اینترنت شما در دسترس نیست یا مسدود شده.";
+        el.className = "mt-6 p-4 rounded text-red-800 bg-red-100 border border-red-200 text-center font-bold";
+      } 
+      else if (!results.dns) {
+        el.innerHTML = "❌ مشکل در DNS: دامنه api.yekzan.com قابل resolve نیست.";
+        el.className = "mt-6 p-4 rounded text-yellow-800 bg-yellow-100 border border-yellow-200 text-center font-bold";
+      } 
+      else if (!results.api) {
+        el.innerHTML = "❌ DNS اوکی است ولی API پاسخگو نیست (ممکن است مشکل SSL یا فیلترینگ باشد).";
+        el.className = "mt-6 p-4 rounded text-orange-800 bg-orange-100 border border-orange-200 text-center font-bold";
+      } 
+      else {
+        el.innerHTML = "✅ همه‌چیز درست کار می‌کند. مشکل احتمالا از اپلیکیشن است.";
+        el.className = "mt-6 p-4 rounded text-green-800 bg-green-100 border border-green-200 text-center font-bold";
+      }
+    }
+
+    // IP و ISP
+    fetch("https://ipinfo.io/json?token=YOUR_TOKEN")
+      .then(r => r.json())
+      .then(d => setResult("ip", true, `IP: ${d.ip} | ISP: ${d.org}`, "ip"))
+      .catch(() => setResult("ip", false, "IP دریافت نشد", "ip"));
+
+    // تست DNS گوگل
+    fetch("https://dns.google/resolve?name=api.yekzan.com&type=A")
+      .then(r => r.json())
+      .then(d => {
+        if (d.Answer) {
+          results.dns = true;
+          setResult("dns-google", true, "DNS گوگل: " + d.Answer.map(a => a.data).join(", "));
+        } else {
+          setResult("dns-google", false, "DNS گوگل نتونست resolve کنه", "dns");
+        }
+      })
+      .catch(() => setResult("dns-google", false, "DNS گوگل در دسترس نیست", "dns"));
+
+    // تست DNS Cloudflare
+    fetch("https://cloudflare-dns.com/dns-query?name=api.yekzan.com&type=A", {
+      headers: { "accept": "application/dns-json" }
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d.Answer) {
+          results.dns = true;
+          setResult("dns-cf", true, "DNS Cloudflare: " + d.Answer.map(a => a.data).join(", "));
+        } else {
+          setResult("dns-cf", false, "DNS Cloudflare نتونست resolve کنه", "dns");
+        }
+      })
+      .catch(() => setResult("dns-cf", false, "DNS Cloudflare در دسترس نیست", "dns"));
+
+    // تست API
+    fetch("https://api.yekzan.com/ping")
+      .then(r => r.text())
+      .then(t => setResult("api", t.includes("OK"), "API پاسخ داد: " + t, "api"))
+      .catch(() => setResult("api", false, "ارتباط با API برقرار نشد", "api"));
+  </script>
+</body>
+</html>
