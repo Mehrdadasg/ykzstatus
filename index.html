@@ -108,7 +108,7 @@ img.src = "https://api.yekzan.com/ping.png?cache=" + Date.now(); // cache-buster
 
 
 // 2️⃣ تست API با نمایش status code واقعی
-fetch("https://api.yekzan.com/api/service/checkstatus")
+fetch("https://api.yekzan.com/api/v4.0/test/Delay?time=1000")
   .then(async r => {
     let text = "";
     try {
